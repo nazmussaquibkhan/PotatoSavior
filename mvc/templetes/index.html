@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potato Disease Detector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="top-navigation">
+            <h1>PotatoSavior</h1>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="plant_care.html">Plant Care</a>
+                <a href="diseases.html">Disease Info</a>
+            </div>
+        </div>
+
+        <!-- Main Content Section -->
+        <div class="content">
+            <div class="breadcrumbs">
+                Home > Potato Disease Detector
+            </div>
+
+            <h2>Potato Disease Detector</h2>
+
+            <!-- Description -->
+            <p>Upload an image of your potato plant to detect potential diseases. We use advanced deep learning algorithms to analyze your plant and provide an accurate prediction.</p>
+
+            <!-- File Input and Prediction Button -->
+            <div class="card">
+                <input type="file" id="file-input" class="form-control mb-3">
+                <button onclick="predict()" class="btn btn-primary">Let's Predict</button>
+                <div id="result" class="mt-4"></div>
+            </div>
+
+            <!-- Result Display Section -->
+            <div id="result-section"></div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 PotatoSavior
+    </footer>
+
+    <script>
+        async function predict() {
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                console.log('Sending request to http://localhost:8000/predict');
+                const response = await fetch('http://localhost:8000/predict', {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'cors' // Ensure CORS is enabled for the request
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response text:', errorText);
+                    throw new Error('Failed to predict. Status: ' + response.status + ' - ' + errorText);
+                }
+
+                const data = await response.json();
+                console.log('Prediction data:', data);
+                displayResult(data);
+            } catch (error) {
+                console.error('Error occurred:', error.message);
+                alert('An error occurred while predicting: ' + error.message);
+            }
+        }
+
+        function displayResult(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ` 
+                <div class="result-box">
+                    <h3>Predicted Class:</h3>
+                    <p>${data.class}</p>
+                </div>
+                <div class="result-box">
+                    <h3>Confidence:</h3>
+                    <p>${data.confidence}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
